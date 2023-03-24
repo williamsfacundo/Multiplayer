@@ -11,6 +11,14 @@ namespace Multiplayer.MessageData
     {
         Vector3 _data;
 
+        public Vector3 Data 
+        {
+            set 
+            {
+                _data = value;
+            }
+        }
+
         public NetVector3(Vector3 data)
         {
             _data = data;
@@ -19,6 +27,8 @@ namespace Multiplayer.MessageData
         public byte[] Serialize() 
         {
             List<byte> data = new List<byte>();
+
+            data.AddRange(BitConverter.GetBytes((int)GetMessageType()));
 
             data.AddRange(BitConverter.GetBytes(_data.x));
             data.AddRange(BitConverter.GetBytes(_data.y));
@@ -30,10 +40,10 @@ namespace Multiplayer.MessageData
         public Vector3 Deserialize(byte[] message)
         {
             Vector3 data = new Vector3();
-
-            data.x = BitConverter.ToSingle(message, 0);
+            
             data.x = BitConverter.ToSingle(message, 4);
-            data.x = BitConverter.ToSingle(message, 8);
+            data.y = BitConverter.ToSingle(message, 8);
+            data.z = BitConverter.ToSingle(message, 12);
 
             return data;
         }
