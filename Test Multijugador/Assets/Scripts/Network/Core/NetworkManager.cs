@@ -1,16 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Net;
 using UnityEngine;
-using System;
+using System.Collections.Generic;
 
-using Multiplayer.Network.Connections;
-using Multiplayer.Network.Structs;
 using Multiplayer.Utils;
+using Multiplayer.Network.Structs;
+using Multiplayer.Network.Connections;
 
 namespace Multiplayer.Network.Core
 {
     public class NetworkManager : MonoBehaviourSingleton<NetworkManager>, IReceiveData
     {
+        public int TimeOut = 30;
+
+        public Action<byte[], IPEndPoint> OnReceiveEvent;
+
+        private UdpConnection connection;
+
+        private readonly Dictionary<int, Client> clients = new Dictionary<int, Client>();
+
+        private readonly Dictionary<IPEndPoint, int> ipToId = new Dictionary<IPEndPoint, int>();
+
+        int clientId = 0; // This id should be generated during first handshake
+
         public IPAddress ipAddress
         {
             get; private set;
@@ -26,21 +38,21 @@ namespace Multiplayer.Network.Core
             get; private set;
         }
 
-        public int TimeOut = 30;
-
-        public Action<byte[], IPEndPoint> OnReceiveEvent;
-
-        private UdpConnection connection;
-
-        private readonly Dictionary<int, Client> clients = new Dictionary<int, Client>();
-        private readonly Dictionary<IPEndPoint, int> ipToId = new Dictionary<IPEndPoint, int>();
-
-        int clientId = 0; // This id should be generated during first handshake
+        private void Update()
+        {
+            // Flush the data in main thread
+            if (connection != null)
+            {
+                connection.FlushReceiveData();
+            }
+        }
 
         public void StartServer(int port)
         {
             isServer = true;
+
             this.port = port;
+            
             connection = new UdpConnection(port, this);
         }
 
@@ -49,6 +61,7 @@ namespace Multiplayer.Network.Core
             isServer = false;
 
             this.port = port;
+
             this.ipAddress = ip;
 
             connection = new UdpConnection(ip, port, this);
@@ -63,6 +76,7 @@ namespace Multiplayer.Network.Core
                 Debug.Log("Adding client: " + ip.Address);
 
                 int id = clientId;
+
                 ipToId[ip] = clientId;
 
                 clients.Add(clientId, new Client(ip, id, Time.realtimeSinceStartup));
@@ -76,6 +90,7 @@ namespace Multiplayer.Network.Core
             if (ipToId.ContainsKey(ip))
             {
                 Debug.Log("Removing client: " + ip.Address);
+
                 clients.Remove(ipToId[ip]);
             }
         }
@@ -84,8 +99,10 @@ namespace Multiplayer.Network.Core
         {
             AddClient(ip);
 
-            if (OnReceiveEvent != null)
+            if (OnReceiveEvent != null) 
+            {
                 OnReceiveEvent.Invoke(data, ip);
+            }
         }
 
         public void SendToServer(byte[] data)
@@ -102,13 +119,6 @@ namespace Multiplayer.Network.Core
                     connection.Send(data, iterator.Current.Value.ipEndPoint);
                 }
             }
-        }
-
-        private void Update()
-        {
-            // Flush the data in main thread
-            if (connection != null)
-                connection.FlushReceiveData();
-        }
+        }        
     }
 }

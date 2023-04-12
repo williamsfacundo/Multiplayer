@@ -1,7 +1,7 @@
-using System.Collections.Generic;
-using System.Net.Sockets;
-using System.Net;
 using System;
+using System.Net;
+using System.Net.Sockets;
+using System.Collections.Generic;
 
 namespace Multiplayer.Network.Connections
 {
@@ -10,11 +10,14 @@ namespace Multiplayer.Network.Connections
         private struct DataReceived
         {
             public byte[] data;
+
             public IPEndPoint ipEndPoint;
         }
 
         private readonly UdpClient connection;
+        
         private IReceiveData receiver = null;
+        
         private Queue<DataReceived> dataReceivedQueue = new Queue<DataReceived>();
 
         object handler = new object();
@@ -50,8 +53,11 @@ namespace Multiplayer.Network.Connections
                 while (dataReceivedQueue.Count > 0)
                 {
                     DataReceived dataReceived = dataReceivedQueue.Dequeue();
-                    if (receiver != null)
+
+                    if (receiver != null) 
+                    {
                         receiver.OnReceiveData(dataReceived.data, dataReceived.ipEndPoint);
+                    }
                 }
             }
         }
@@ -61,6 +67,7 @@ namespace Multiplayer.Network.Connections
             try
             {
                 DataReceived dataReceived = new DataReceived();
+
                 dataReceived.data = connection.EndReceive(ar, ref dataReceived.ipEndPoint);
 
                 lock (handler)

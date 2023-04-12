@@ -1,14 +1,15 @@
-﻿using UnityEngine.UI;
-using System.Net;
+﻿using System.Net;
+using UnityEngine.UI;
 
-using Multiplayer.Network.Core;
 using Multiplayer.Utils;
+using Multiplayer.Network.Core;
 
 namespace Multiplayer.UI
 {
     public class ChatScreen : MonoBehaviourSingleton<ChatScreen>
     {
         public Text messages;
+
         public InputField inputMessage;
 
         protected override void Initialize()
@@ -37,6 +38,7 @@ namespace Multiplayer.UI
                 if (NetworkManager.Instance.isServer)
                 {
                     NetworkManager.Instance.Broadcast(System.Text.ASCIIEncoding.UTF8.GetBytes(inputMessage.text));
+                    
                     messages.text += inputMessage.text + System.Environment.NewLine;
                 }
                 else
@@ -45,7 +47,9 @@ namespace Multiplayer.UI
                 }
 
                 inputMessage.ActivateInputField();
+
                 inputMessage.Select();
+
                 inputMessage.text = "";
             }
         }
