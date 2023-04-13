@@ -37,13 +37,13 @@ namespace Multiplayer.Cube.CubesManager
             {
                 Debug.Log("Cube prefab is not selected!");
             }
-        }
+        }   
 
         public void InstantiateNewCube() 
         {
             if (_isPrefabACube) 
             {
-                GameObject _aux = Instantiate(_cubePrefab, _cubePrefab.GetComponent<CubeStats>().InitialPosition * CubeCount, Quaternion.identity);
+                GameObject _aux = Instantiate(_cubePrefab, _cubePrefab.GetComponent<CubeIdentity>().Stats.InitialPosition * CubeCount + (_cubePrefab.transform.localScale.x * Vector3.right * CubeCount), Quaternion.identity);
 
                 _aux.GetComponent<CubeIdentity>().Id = CubeCount;
 
