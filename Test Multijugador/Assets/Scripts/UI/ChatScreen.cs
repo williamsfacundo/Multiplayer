@@ -12,6 +12,11 @@ namespace Multiplayer.UI
 
         public InputField inputMessage;
 
+        public void HideInputMessage() 
+        {
+            inputMessage.gameObject.SetActive(false);
+        }
+
         protected override void Initialize()
         {
             inputMessage.onEndEdit.AddListener(OnEndEdit);

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Multiplayer.Utils;
 using Multiplayer.Network.Structs;
 using Multiplayer.Network.Connections;
+using Multiplayer.UI;
 
 namespace Multiplayer.Network.Core
 {
@@ -54,6 +55,8 @@ namespace Multiplayer.Network.Core
             this.port = port;
             
             connection = new UdpConnection(port, this);
+
+            ChatScreen.Instance.HideInputMessage();
         }
 
         public void StartClient(IPAddress ip, int port)
