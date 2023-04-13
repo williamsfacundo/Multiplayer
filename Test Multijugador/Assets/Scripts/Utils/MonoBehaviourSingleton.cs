@@ -10,8 +10,10 @@ namespace Multiplayer.Utils
         {
             get 
             {
-                if (instance == null)
+                if (instance == null) 
+                {
                     instance = FindObjectOfType<MonoBehaviourSingleton<T>>();
+                }
 
                 return (T)instance;
             }
@@ -24,8 +26,10 @@ namespace Multiplayer.Utils
 
         private void Awake()
         {
-            if (instance != null)
-                Destroy(this.gameObject);
+            if (instance != null) 
+            {
+                Destroy(this.gameObject);                
+            }
 
             instance = this;
 
