@@ -50,7 +50,7 @@ namespace Multiplayer.MessageData
 
         public MessageTypeEnum GetMessageType() 
         {
-            return MessageTypeEnum.Vec3;
+            return MessageTypeEnum.Position;
         }
     }
 }
