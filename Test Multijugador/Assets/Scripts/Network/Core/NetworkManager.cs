@@ -3,10 +3,12 @@ using System.Net;
 using UnityEngine;
 using System.Collections.Generic;
 
-using Multiplayer.Utils;
-using Multiplayer.Network.Structs;
-using Multiplayer.Network.Connections;
 using Multiplayer.UI;
+using Multiplayer.Utils;
+using Multiplayer.Network.Enums;
+using Multiplayer.Network.Structs;
+using Multiplayer.Cube.CubesManager;
+using Multiplayer.Network.Connections;
 
 namespace Multiplayer.Network.Core
 {
@@ -22,21 +24,30 @@ namespace Multiplayer.Network.Core
 
         private readonly Dictionary<IPEndPoint, int> ipToId = new Dictionary<IPEndPoint, int>();
 
-        int clientId = 0; // This id should be generated during first handshake
+        NetHandShake netHandShake;
 
-        public IPAddress ipAddress
+        private MessageTypeEnum _messageType;
+
+        int clientId = 0; // This id should be generated during first handshake        
+
+        public IPAddress Address
         {
             get; private set;
         }
 
-        public int port
+        public int Port
         {
             get; private set;
         }
 
-        public bool isServer
+        public bool IsServer
         {
             get; private set;
+        }
+
+        void Awake()
+        {
+            netHandShake = new NetHandShake();
         }
 
         private void Update()
@@ -50,9 +61,9 @@ namespace Multiplayer.Network.Core
 
         public void StartServer(int port)
         {
-            isServer = true;
+            IsServer = true;
 
-            this.port = port;
+            this.Port = port;
             
             connection = new UdpConnection(port, this);
 
@@ -61,51 +72,50 @@ namespace Multiplayer.Network.Core
 
         public void StartClient(IPAddress ip, int port)
         {
-            isServer = false;
+            IsServer = false;
 
-            this.port = port;
+            this.Port = port;
 
-            this.ipAddress = ip;
+            this.Address = ip;
 
             connection = new UdpConnection(ip, port, this);
 
-            AddClient(new IPEndPoint(ip, port));
-        }
+            netHandShake.Adress = BitConverter.ToInt64(ip.GetAddressBytes(), 0);
+            
+            netHandShake.Port = port;
 
-        private void AddClient(IPEndPoint ip)
-        {
-            if (!ipToId.ContainsKey(ip))
-            {
-                Debug.Log("Adding client: " + ip.Address);
-
-                int id = clientId;
-
-                ipToId[ip] = clientId;
-
-                clients.Add(clientId, new Client(ip, id, Time.realtimeSinceStartup));
-
-                clientId++;
-            }
-        }
-
-        private void RemoveClient(IPEndPoint ip)
-        {
-            if (ipToId.ContainsKey(ip))
-            {
-                Debug.Log("Removing client: " + ip.Address);
-
-                clients.Remove(ipToId[ip]);
-            }
-        }
+            SendToServer(netHandShake.Serialize());
+        }      
 
         public void OnReceiveData(byte[] data, IPEndPoint ip)
         {
-            AddClient(ip);
+            _messageType = GetMessageType(data);
 
-            if (OnReceiveEvent != null) 
+            switch (_messageType)
             {
-                OnReceiveEvent.Invoke(data, ip);
-            }
+                case MessageTypeEnum.HandShake:
+
+                    (long, int) auxData = netHandShake.Deserialize(data);
+
+                    IPEndPoint auxIp = new IPEndPoint(auxData.Item1, auxData.Item2);
+                    
+                    AddClient(auxIp);
+
+                    OnReceiveEvent?.Invoke(data, ip);
+
+                    break;
+                case MessageTypeEnum.Console:
+
+                    break;
+
+                case MessageTypeEnum.Position:
+
+                    OnReceiveEvent?.Invoke(data, ip);
+
+                    break;
+                default:
+                    break;
+            }            
         }
 
         public void SendToServer(byte[] data)
@@ -122,6 +132,66 @@ namespace Multiplayer.Network.Core
                     connection.Send(data, iterator.Current.Value.ipEndPoint);
                 }
             }
-        }        
+        }
+
+        private void AddClient(IPEndPoint ip)
+        {
+            if (!ipToId.ContainsKey(ip))
+            {
+                Debug.Log("Adding client: " + ip.Address);
+
+                int id = clientId;
+
+                ipToId[ip] = clientId;
+
+                clients.Add(clientId, new Client(ip, id, Time.realtimeSinceStartup));
+
+                clientId++;
+
+                CubeInstancesManager.Instance.InstantiateNewCube(false);                
+            }            
+        }
+
+        private void AddClient(IPEndPoint ip, int idOfNewClient)
+        {
+            if (!ipToId.ContainsKey(ip))
+            {
+                Debug.Log("Adding client: " + ip.Address);
+
+                int id = clientId;
+
+                ipToId[ip] = clientId;
+
+                clients.Add(clientId, new Client(ip, id, Time.realtimeSinceStartup));
+
+                clientId++;
+
+                if (clientId == idOfNewClient)
+                {
+                    CubeInstancesManager.Instance.InstantiateNewCube(true);
+                }
+                else
+                {
+                    CubeInstancesManager.Instance.InstantiateNewCube(false);
+                }
+            }
+        }
+
+        private void RemoveClient(IPEndPoint ip)
+        {
+            if (ipToId.ContainsKey(ip))
+            {
+                Debug.Log("Removing client: " + ip.Address);
+
+                clients.Remove(ipToId[ip]);
+            }
+        }
+
+        private MessageTypeEnum GetMessageType(byte[] data) 
+        {
+            int type = BitConverter.ToInt32(data, 0);
+
+            return (MessageTypeEnum)type;
+        }
     }
 }

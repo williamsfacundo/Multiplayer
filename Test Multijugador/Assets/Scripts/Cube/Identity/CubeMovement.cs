@@ -9,7 +9,7 @@ namespace Multiplayer.Cube.CubeObject
         private float _verticalInput;
 
         private Vector3 _direction;
-
+        
         void Start()
         {
             _direction = Vector3.zero;            

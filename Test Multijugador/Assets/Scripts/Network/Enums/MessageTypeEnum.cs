@@ -4,6 +4,7 @@ namespace Multiplayer.Network.Enums
     {
         HandShake = -1,
         Console = 0,
-        Position = 1
+        Position = 1,
+        Index = 2
     }
 }

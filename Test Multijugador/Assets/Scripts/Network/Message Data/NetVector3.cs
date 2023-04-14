@@ -13,6 +13,10 @@ namespace Multiplayer.MessageData
 
         public Vector3 Data 
         {
+            get 
+            { 
+                return _data; 
+            }
             set 
             {
                 _data = value;

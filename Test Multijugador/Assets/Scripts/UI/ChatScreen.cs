@@ -28,7 +28,7 @@ namespace Multiplayer.UI
 
         private void OnReceiveDataEvent(byte[] data, IPEndPoint ep)
         {
-            if (NetworkManager.Instance.isServer)
+            if (NetworkManager.Instance.IsServer)
             {
                 NetworkManager.Instance.Broadcast(data);
             }
@@ -40,7 +40,7 @@ namespace Multiplayer.UI
         {
             if (inputMessage.text != "")
             {
-                if (NetworkManager.Instance.isServer)
+                if (NetworkManager.Instance.IsServer)
                 {
                     NetworkManager.Instance.Broadcast(System.Text.ASCIIEncoding.UTF8.GetBytes(inputMessage.text));
                     

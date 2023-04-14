@@ -8,16 +8,34 @@ public class NetHandShake : IMessage<(long, int)>
 {
     private (long, int) _data;
 
-    public (long, int) Data 
+    public long Adress 
     {
         set 
         {
-            _data = value;
+            _data.Item1 = value;
         }
+    }
+
+    public long Port
+    {
+        set
+        {
+            _data.Item1 = value;
+        }
+    }
+
+    public (long, int) Data 
+    {        
         get 
         { 
             return _data;
         }
+    }
+
+    public NetHandShake()
+    {
+        _data.Item1 = 0;
+        _data.Item2 = 0;
     }
 
     public NetHandShake((long, int) data) 
@@ -50,5 +68,5 @@ public class NetHandShake : IMessage<(long, int)>
     public MessageTypeEnum GetMessageType()
     {
         return MessageTypeEnum.HandShake;
-    }
+    }    
 }

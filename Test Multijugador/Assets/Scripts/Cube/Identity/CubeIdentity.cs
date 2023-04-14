@@ -13,6 +13,8 @@ namespace Multiplayer.Cube.CubeObject
 
         private int _id;
 
+        private bool _isPlayer;
+
         public CubeStats Stats 
         {
             get 
@@ -49,13 +51,32 @@ namespace Multiplayer.Cube.CubeObject
             }
         }
 
+        public bool IsPlayer 
+        {
+            set 
+            {
+                _isPlayer = value;
+
+                SetPlayer(_isPlayer);
+            }
+            get 
+            {
+                return _isPlayer;
+            }
+        }
+
         private void Awake()
         {
             if (_stats == null) { Debug.Log("Stats Require!"); }
 
             _movement = GetComponent<CubeMovement>();
 
-            _cubeRigidbody = GetComponent<Rigidbody>();
+            _cubeRigidbody = GetComponent<Rigidbody>();            
+        }
+
+        private void SetPlayer(bool isplayer)
+        {
+            _movement.enabled = false;
         }
     }
 }

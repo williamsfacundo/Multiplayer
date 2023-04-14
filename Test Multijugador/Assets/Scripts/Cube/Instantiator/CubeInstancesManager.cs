@@ -15,7 +15,7 @@ namespace Multiplayer.Cube.CubesManager
         private static int CubeCount = 0;
 
         private bool _isPrefabACube;
-
+        
         void Awake()
         {
             _cubes = new List<GameObject>();
@@ -39,18 +39,23 @@ namespace Multiplayer.Cube.CubesManager
             }
         }   
 
-        public void InstantiateNewCube() 
+        public void InstantiateNewCube(bool isPlayer)
         {
-            if (_isPrefabACube) 
+            if (_isPrefabACube)
             {
-                GameObject _aux = Instantiate(_cubePrefab, _cubePrefab.GetComponent<CubeIdentity>().Stats.InitialPosition * CubeCount + (_cubePrefab.transform.localScale.x * Vector3.right * CubeCount), Quaternion.identity);
+                GameObject _auxCube = Instantiate(_cubePrefab);
 
-                _aux.GetComponent<CubeIdentity>().Id = CubeCount;
+                CubeIdentity _auxIdentity = _auxCube.GetComponent<CubeIdentity>();
+
+                _auxCube.transform.position = _auxIdentity.Stats.InitialPosition * CubeCount + (_cubePrefab.transform.localScale.x * Vector3.right * CubeCount);
+
+                _auxIdentity.Id = CubeCount;
+
+                _auxIdentity.IsPlayer = isPlayer;
 
                 CubeCount += 1;
 
-                _cubes.Add(_aux);
-                
+                _cubes.Add(_auxCube);                              
             }
         }
 

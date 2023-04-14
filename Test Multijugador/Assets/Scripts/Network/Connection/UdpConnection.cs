@@ -34,6 +34,7 @@ namespace Multiplayer.Network.Connections
         public UdpConnection(IPAddress ip, int port, IReceiveData receiver = null)
         {
             connection = new UdpClient();
+
             connection.Connect(ip, port);
 
             this.receiver = receiver;
